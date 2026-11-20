@@ -10,7 +10,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<SampleDbContext>(options =>
 	options.UseNpgsql(connectionString));
 
-// TODO: Configure NServiceBus endpoint to subscribe to/handle messages
+var workerEndpointName = builder.Configuration["Messaging:EndpointName"]
+	?? throw new InvalidOperationException("Configuration value 'Messaging:EndpointName' is not configured.");
+var errorQueueName = builder.Configuration["Messaging:ErrorQueue"]
+	?? throw new InvalidOperationException("Configuration value 'Messaging:ErrorQueue' is not configured.");
+
+var endpointConfiguration = new EndpointConfiguration(workerEndpointName);
+endpointConfiguration.UseTransport(new PostgreSqlTransport(connectionString));
+endpointConfiguration.UseSerialization<SystemJsonSerializer>();
+endpointConfiguration.SendFailedMessagesTo(errorQueueName);
+
+if (builder.Environment.IsDevelopment())
+{
+	endpointConfiguration.EnableInstallers();
+}
+
+builder.Services.AddNServiceBusEndpoint(endpointConfiguration);
 
 builder.Services.AddHostedService<Worker>();
 
