@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Sample.Api/Sample.Api.csproj" />
+  <Project Path="Sample.Common/Sample.Common.csproj" Id="fdf6553c-4238-4b2d-8eb5-1eb3cedcf183" />
+  <Project Path="Sample.WorkerService/Sample.WorkerService.csproj" />
+</Solution>
