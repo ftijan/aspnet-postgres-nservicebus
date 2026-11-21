@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$DbName = "sample_db",
+    [string]$DbName = "sample_app",
     [string]$DbHost = "localhost",
     [int]$DbPort = 5432,
     [string]$ApiAppSettings = (Join-Path $PSScriptRoot "src/Sample.PubSub/Sample.Api/appsettings.json"),
