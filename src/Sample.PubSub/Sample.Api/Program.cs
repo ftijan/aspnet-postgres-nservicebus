@@ -4,6 +4,7 @@ using Sample.Common.Contracts;
 using Sample.Common.Data;
 using Sample.Common.Messages;
 using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,12 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddNServiceBusEndpoint(endpointConfiguration);
+
+// This will enable Scalar UI to display enum param values as a dropdown
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var app = builder.Build();
 
