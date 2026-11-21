@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Sample.Common;
-using Sample.WorkerService;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -27,7 +26,7 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddNServiceBusEndpoint(endpointConfiguration);
 
-builder.Services.AddHostedService<Worker>();
+// Add background workers here
 
 var host = builder.Build();
 host.Run();

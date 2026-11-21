@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Sample.Common;
+using Sample.Common.Contracts;
+using Sample.Common.Data;
+using Sample.Common.Messages;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,18 +51,39 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapPost("/api/ticket", () =>
+app.MapPost("/api/ticket", async (
+    CreateTicketRequest request,
+    IMessageSession messageSession) =>
 {
-	// TODO: Publish TicketSubmitted via NServiceBus
-	return Results.Accepted();
+    if (string.IsNullOrWhiteSpace(request.Text))
+    {
+        return Results.BadRequest("Ticket text is required.");
+    }
+
+    var id = Guid.NewGuid();
+    await messageSession.Publish(new TicketSubmitted(id, request.Text));
+
+    return Results.Accepted($"/api/ticket/{id}", new { id });
 });
 
-app.MapGet("/api/ticket", async (SampleDbContext db) =>
+app.MapGet("/api/ticket", async (
+	SampleDbContext db,
+	TicketOrderBy orderBy = TicketOrderBy.CreatedAtDesc,
+	CancellationToken cancellationToken = default) =>
 {
-	var tickets = await db.Tickets
-		.OrderByDescending(t => t.CreatedAt)
-		.Select(t => new { t.Id, t.Text })
-		.ToListAsync();
+	IQueryable<Ticket> query = db.Tickets;
+
+	query = orderBy switch
+	{
+		TicketOrderBy.CreatedAtAsc => query.OrderBy(t => t.CreatedAt).ThenBy(t => t.Id),
+		TicketOrderBy.TextAsc => query.OrderBy(t => t.Text).ThenBy(t => t.Id),
+		TicketOrderBy.TextDesc => query.OrderByDescending(t => t.Text).ThenBy(t => t.Id),
+		_ => query.OrderByDescending(t => t.CreatedAt).ThenBy(t => t.Id)
+	};
+
+	var tickets = await query
+		.Select(t => new TicketResponse(t.Id, t.Text, t.CreatedAt))
+		.ToListAsync(cancellationToken);
 
 	return Results.Ok(tickets);
 });

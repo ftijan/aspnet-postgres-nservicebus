@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sample.Common.Data;
 
 namespace Sample.Common;
 

@@ -1,3 +1,3 @@
-﻿namespace Sample.Common;
+﻿namespace Sample.Common.Messages;
 
-public sealed record TicketSubmitted(Guid Id, string Text);
+public sealed record TicketSubmitted(Guid Id, string Text) : IEvent;

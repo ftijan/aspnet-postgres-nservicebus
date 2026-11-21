@@ -1,4 +1,4 @@
-﻿namespace Sample.Common;
+﻿namespace Sample.Common.Data;
 
 public sealed class Ticket
 {
