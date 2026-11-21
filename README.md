@@ -33,6 +33,34 @@ In `Development`:
 2. Run `Sample.Worker` so it starts listening for `TicketSubmitted` events.
 3. Run `Sample.Api` and open `/scalar` to test `POST /api/ticket` and `GET /api/ticket` (including `?orderBy=...`).
 
+## Rotating Local Database Credentials
+
+A helper PowerShell script (`rotate-db-creds.ps1`) is included in the repository root to generate randomized PostgreSQL credentials (`app_xxxxxxxx` username and a 24-character password) and keep local configuration in sync.
+
+### What It Updates
+
+* `docker-compose.yml` (`POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`)
+* `src/Sample.PubSub/Sample.Api/appsettings.json` (`ConnectionStrings:DefaultConnection`)
+* `src/Sample.PubSub/Sample.Worker/appsettings.json` (`ConnectionStrings:DefaultConnection`)
+
+### Usage
+
+Run from the repository root:
+
+```powershell
+.\rotate-db-creds.ps1
+```
+
+To target `appsettings.Development.json` files instead (recommended to avoid committing generated credentials):
+
+```powershell
+.\rotate-db-creds.ps1 `
+  -ApiAppSettings .\src\Sample.PubSub\Sample.Api\appsettings.Development.json `
+  -WorkerAppSettings .\src\Sample.PubSub\Sample.Worker\appsettings.Development.json
+```
+
+> **Note:** PostgreSQL only applies `POSTGRES_USER` and `POSTGRES_PASSWORD` from `docker-compose.yml` when initializing a fresh data volume. If you rotate credentials after the container has already been created, recreate the volume (`docker compose down -v; docker compose up -d`).
+
 ## AI Disclaimer
 
 Gemini LLM model was used to suggest and generate some parts of the code, which were manually cleaned up and simplified afterwards.
